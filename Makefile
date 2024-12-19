@@ -1,8 +1,8 @@
-SRCS_PATH    = ./srcs
-DOCKER_COMPOSE := docker-compose
-DOCKER_COMPOSE_FILE := $(SRCS_PATH)/docker-compose.yml
+SRCS_PATH			:= ./srcs
+DOCKER_COMPOSE		:= docker-compose
+DOCKER_COMPOSE_FILE	:= $(SRCS_PATH)/docker-compose.yml
 
-.PHONY: up start stop restart status ps clean
+.PHONY: up start stop restart logs status ps clean
 
 up:
 	@$(DOCKER_COMPOSE) -f $(DOCKER_COMPOSE_FILE) up $(c)

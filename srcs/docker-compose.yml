@@ -8,8 +8,10 @@ services:
       - "443:443"
     volumes:
       - wordpress_data:/var/www/html
+      - ${CERTS}:/etc/nginx/ssl
     environment:
       - DOMAIN_NAME=${DOMAIN_NAME}
+      - CERTS=${CERTS}
     restart: on-failure
 
   wordpress:
@@ -24,6 +26,7 @@ services:
       - WORDPRESS_DB_USER=${MYSQL_USER}
       - WORDPRESS_DB_PASSWORD=${MYSQL_PASSWORD}
       - WORDPRESS_DB_NAME=${MYSQL_DATABASE}
+      - DOMAIN_NAME=${DOMAIN_NAME}
     restart: on-failure
 
   mariadb:
@@ -40,10 +43,10 @@ services:
       - MYSQL_DATABASE=${MYSQL_DATABASE}
     restart: on-failure
 
-networks:
-  default:
-    driver: bridge
-
 volumes:
   wordpress_data:
   db_data:
+
+networks:
+  default:
+    driver: bridge
