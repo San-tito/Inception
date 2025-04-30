@@ -6,7 +6,7 @@
 #    By: sguzman <sguzman@student.42barcelona.com   +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/04/26 13:24:15 by sguzman           #+#    #+#              #
-#    Updated: 2025/04/26 16:07:00 by sguzman          ###   ########.fr        #
+#    Updated: 2025/04/30 16:45:49 by sguzman          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -19,4 +19,4 @@ usage:
 	@$(DOCKER_COMPOSE) --help | awk '/^Usage:/ {print} /^Commands:/,0 {print}'
 
 %:
-	@$(DOCKER_COMPOSE) -f $(DOCKER_COMPOSE_FILE) $@ $(filter-out $@,$(MAKECMDGOALS))
+	@$(DOCKER_COMPOSE) -f $(DOCKER_COMPOSE_FILE) $(subst -, ,$@)

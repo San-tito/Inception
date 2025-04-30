@@ -1,51 +1,17 @@
 services:
   nginx:
-    build: 
-      context: ./requirements/nginx
-      dockerfile: Dockerfile
-    container_name: nginx
+    build: ./requirements/nginx
     ports:
-      - "443:443"
-    volumes:
-      - wordpress_data:/var/www/html
-      - ${CERTS}:/etc/nginx/ssl
-    environment:
-      - DOMAIN_NAME=${DOMAIN_NAME}
-      - CERTS=${CERTS}
+      - "8080:80"
     restart: on-failure
 
   wordpress:
-    build:
-      context: ./requirements/wordpress
-      dockerfile: Dockerfile
-    container_name: wordpress
-    volumes:
-      - wordpress_data:/var/www/html
-    environment:
-      - WORDPRESS_DB_HOST=mariadb
-      - WORDPRESS_DB_USER=${MYSQL_USER}
-      - WORDPRESS_DB_PASSWORD=${MYSQL_PASSWORD}
-      - WORDPRESS_DB_NAME=${MYSQL_DATABASE}
-      - DOMAIN_NAME=${DOMAIN_NAME}
+    build: ./requirements/wordpress
     restart: on-failure
 
   mariadb:
-    build:
-      context: ./requirements/mariadb
-      dockerfile: Dockerfile
-    container_name: mariadb
-    volumes:
-      - db_data:/var/lib/mysql
-    environment:
-      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
-      - MYSQL_USER=${MYSQL_USER}
-      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
-      - MYSQL_DATABASE=${MYSQL_DATABASE}
+    build: ./requirements/mariadb
     restart: on-failure
-
-volumes:
-  wordpress_data:
-  db_data:
 
 networks:
   default:
