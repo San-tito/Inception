@@ -11,34 +11,39 @@ error() {
 	log "$@" >&2
 	exit 1
 }
+
 set_env() {
 	local var="$1"
 	local def="${2:-}"
 	eval val=\$$var
 	if [ -z "$val" ] && [ -n "$def" ]; then
-		val="$default"
+		val="$def"
 	fi
 	export "$var=$val"
+}
+
+maria_set_env() {
+    var="$1"; shift
+    maria=$(echo "$var" | sed 's/^MYSQL_/MARIADB_/')
+    set_env "$var" "$@"
+    set_env "$maria" "$(eval echo \$$var)"
+    if [ -n "$(eval echo \$$maria)" ]; then
+        export "$var=\$(eval echo \$$maria)"
+    fi
 }
 
 setup_env() {
 	DATADIR="$(get_config 'datadir' "$@")"
 	SOCKET="$(get_config 'socket' "$@")"
-	PORT="$(get_config 'port' "$@")"
 
-	set_env 'MARIADB_ROOT_HOST' '%'
-	set_env 'MARIADB_DATABASE'
-	set_env 'MARIADB_USER'
-	set_env 'MARIADB_PASSWORD'
-	set_env 'MARIADB_ROOT_PASSWORD'
+	maria_set_env 'MYSQL_ROOT_HOST' '%'
+	maria_set_env 'MYSQL_DATABASE'
+	maria_set_env 'MYSQL_USER'
+	maria_set_env 'MYSQL_PASSWORD'
+	maria_set_env 'MYSQL_ROOT_PASSWORD'
 
 	set_env 'MARIADB_PASSWORD_HASH'
 	set_env 'MARIADB_ROOT_PASSWORD_HASH'
-	set_env 'MARIADB_REPLICATION_USER'
-	set_env 'MARIADB_REPLICATION_PASSWORD'
-	set_env 'MARIADB_REPLICATION_PASSWORD_HASH'
-	set_env 'MARIADB_MASTER_HOST'
-	set_env 'MARIADB_MASTER_PORT' '3306'
 
 	if [ -d "$DATADIR/mysql" ]; then
 		DATABASE_ALREADY_EXISTS=true
@@ -120,7 +125,6 @@ mariadb_init()
 	log "MariaDB init process done. Ready for start up."
 	echo
 }
-
 
 if [ "$1" = "mariadbd" ]; then
 	setup_env "$@"

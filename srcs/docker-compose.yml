@@ -12,7 +12,7 @@ services:
   mariadb:
     build: ./requirements/mariadb
     environment:
-      MARIADB_ROOT_PASSWORD: password
+      MYSQL_ROOT_PASSWORD: password
     restart: on-failure
 
 networks:
