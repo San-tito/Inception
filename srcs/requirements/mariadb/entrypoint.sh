@@ -128,7 +128,7 @@ process_sql() {
 	mariadb --protocol=socket -uroot -hlocalhost --socket="${SOCKET}" "$@"
 }
 
-docker_setup_db() {
+setup_db() {
 	local rootCreate=
 	if [ -n "$MARIADB_ROOT_HOST" ] && [ "$MARIADB_ROOT_HOST" != 'localhost' ]; then
 		read -r -d '' rootCreate <<-EOSQL || true
@@ -183,7 +183,7 @@ mariadb_init()
 
 	temp_server_start "$@"
 
-	docker_setup_db
+	setup_db
 
 	temp_server_stop
 
