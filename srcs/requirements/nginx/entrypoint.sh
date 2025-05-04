@@ -17,7 +17,7 @@ if [ "$1" = "nginx" ]; then
 		-newkey rsa:2048 \
 		-keyout /etc/nginx/ssl/nginx.key \
 		-out /etc/nginx/ssl/nginx.crt \
-		-subj "/C=ES/ST=Catalonia/L=Barcelona/O=42Barcelona/OU=42 School/CN=sguzman.42.fr" >/dev/null 2>&1 \
+		-subj "/C=ES/ST=Catalonia/L=Barcelona/O=42/OU=42Barcelona/CN=sguzman.42.fr" >/dev/null 2>&1 \
 		|| { log "error: cannot create SSL certificate"; exit 0; }
 	log "Modifying Nginx configuration..."
 	sed -i '/http {/a \
