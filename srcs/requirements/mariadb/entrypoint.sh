@@ -42,9 +42,6 @@ setup_env() {
 	maria_set_env 'MYSQL_PASSWORD'
 	maria_set_env 'MYSQL_ROOT_PASSWORD'
 
-	set_env 'MARIADB_PASSWORD_HASH'
-	set_env 'MARIADB_ROOT_PASSWORD_HASH'
-
 	if [ -d "$DATADIR/mysql" ]; then
 		DATABASE_ALREADY_EXISTS=true
 	fi
@@ -67,18 +64,20 @@ get_config() {
 }
 
 verify_minimum_env() {
-	if [ -z "$MARIADB_ROOT_PASSWORD" ] && [ -z "$MARIADB_ROOT_PASSWORD_HASH" ] && [ -z "$MARIADB_ALLOW_EMPTY_ROOT_PASSWORD" ] && [ -z "$MARIADB_RANDOM_ROOT_PASSWORD" ]; then
-		error $'Database is uninitialized and password option is not specified\n\tYou need to specify one of MARIADB_ROOT_PASSWORD, MARIADB_ROOT_PASSWORD_HASH, MARIADB_ALLOW_EMPTY_ROOT_PASSWORD and MARIADB_RANDOM_ROOT_PASSWORD'
-	fi
-	if [ -n "$MARIADB_ROOT_PASSWORD" ] || [ -n "$MARIADB_ALLOW_EMPTY_ROOT_PASSWORD" ] || [ -n "$MARIADB_RANDOM_ROOT_PASSWORD" ] && [ -n "$MARIADB_ROOT_PASSWORD_HASH" ]; then
-		error "Cannot specify MARIADB_ROOT_PASSWORD_HASH and another MARIADB_ROOT_PASSWORD* option."
-	fi
-	if [ -n "$MARIADB_PASSWORD" ] && [ -n "$MARIADB_PASSWORD_HASH" ]; then
-		error "Cannot specify MARIADB_PASSWORD_HASH and MARIADB_PASSWORD option."
+	if [ -z "$MARIADB_ROOT_PASSWORD" ]; then
+		error $'Database is uninitialized and password option is not specified\n\tYou need to specify one of MARIADB_ROOT_PASSWORD'
 	fi
 }
 
 setup_db() {
+	if [ -n "$MARIADB_ROOT_HOST" ] && [ "$MARIADB_ROOT_HOST" != 'localhost' ]; then
+		log "Setting root password for host $MARIADB_ROOT_HOST"
+	fi
+	local createUser
+	if  [ -n "$MARIADB_PASSWORD" ] && [ -n "$MARIADB_USER" ]; then
+		log "Creating user $MARIADB_USER"
+		createUser="CREATE USER '$MARIADB_USER'@'%' IDENTIFIED BY '$MARIADB_PASSWORD';"
+	fi
 	mariadb --database=mysql --binary-mode --protocol=socket -uroot -hlocalhost --socket="${SOCKET}" <<EOSQL
     -- Securing system users shouldn't be replicated
     SET @orig_sql_log_bin= @@SESSION.SQL_LOG_BIN;
@@ -90,15 +89,7 @@ setup_db() {
     DROP USER IF EXISTS root@'127.0.0.1', root@'::1';
     EXECUTE IMMEDIATE CONCAT('DROP USER IF EXISTS root@\'', @@hostname,'\'');
 
-    ${rootLocalhostPass}
-    ${rootCreate}
-    ${mysqlAtLocalhost}
-    ${mysqlAtLocalhostGrants}
-    ${createDatabase}
     ${createUser}
-    ${createReplicaUser}
-    ${userGrants}
-    ${changeMasterTo}
 
     -- end of securing system users, rest of init now...
     SET @@SESSION.SQL_LOG_BIN=@orig_sql_log_bin;
