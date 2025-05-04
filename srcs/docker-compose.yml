@@ -13,6 +13,8 @@ services:
     build: ./requirements/mariadb
     environment:
       MYSQL_ROOT_PASSWORD: password
+      MYSQL_USER: sguzman
+      MYSQL_PASSWORD: password
     restart: on-failure
 
 networks:
