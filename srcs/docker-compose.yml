@@ -2,11 +2,13 @@ services:
   nginx:
     build: ./requirements/nginx
     ports:
-      - "443:443"
+      - "8443:443"
     restart: on-failure
 
   wordpress:
     build: ./requirements/wordpress
+    environment:
+      WORDPRESS_DB_PASSWORD: password
     restart: on-failure
 
   mariadb:
