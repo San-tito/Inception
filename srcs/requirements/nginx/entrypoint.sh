@@ -22,26 +22,42 @@ generate_ssl() {
 	mkdir -p /etc/nginx/ssl
 	openssl req -x509 -nodes -days 365 \
 		-newkey rsa:2048 \
-		-keyout /etc/nginx/ssl/nginx.key \
-		-out /etc/nginx/ssl/nginx.crt \
-		-subj "/C=ES/ST=Catalonia/L=Barcelona/O=42/OU=42Barcelona/CN=sguzman.42.fr" >/dev/null 2>&1
+		-keyout /etc/nginx/ssl/${DOMAIN_NAME}.key \
+		-out /etc/nginx/ssl/${DOMAIN_NAME}.crt \
+		-subj "/C=ES/ST=Catalonia/L=Barcelona/O=42/OU=42Barcelona/CN=${DOMAIN_NAME}" >/dev/null 2>&1
 
-	if [ ! -f /etc/nginx/ssl/nginx.key ]; then
+	if [ ! -f /etc/nginx/ssl/${DOMAIN_NAME}.key ]; then
 		error "Cannot create SSL key"
 	fi
 
 	log "SSL certificates generated"
 }
 
+verify_minimum_env() {
+	if [ -z "$DOMAIN_NAME" ] || [ -z "$FPM_HOST" ]; then
+		error $'Nginx is unitialized and options are not specified\n\tYou need to specify DOMAIN_NAME and FPM_HOST' 
+	fi
+}
+
 nginx_init() {
 	log "Configuring server"
-	sed -i '/http {/a \
-	server {\
-		listen 443 ssl;\
-		server_name sguzman.42.fr;\
-		ssl_certificate /etc/nginx/ssl/nginx.crt;\
-		ssl_certificate_key /etc/nginx/ssl/nginx.key;\
-	}' /etc/nginx/nginx.conf
+	sed -i "/http {/a \\
+	server {\\
+		listen 443 ssl;\\
+		server_name $DOMAIN_NAME;\\
+		ssl_certificate /etc/nginx/ssl/$DOMAIN_NAME.crt;\\
+		ssl_certificate_key /etc/nginx/ssl/$DOMAIN_NAME.key;\\
+		root /var/www/html;\\
+		index index.html index.php;\\
+		location / {\\
+			try_files \$uri \$uri/ /index.php\$is_args\$args;\\
+		}\\
+		location ~ \\.php\$ {\\
+			include fastcgi_params;\\
+			fastcgi_pass $FPM_HOST:9000;\\
+			fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;\\
+		}\\
+	}" /etc/nginx/nginx.conf
 	sed -i 's/ssl_protocols TLSv1.1 TLSv1.2 TLSv1.3/ssl_protocols TLSv1.2 TLSv1.3/g' /etc/nginx/nginx.conf
 	log "Nginx init process done. Ready for start up."
 }
@@ -50,6 +66,8 @@ if [ "$1" = "nginx" ]; then
 	log "Entrypoint script for Nginx Server started."
 
 	setup_config
+
+	verify_minimum_env
 
 	generate_ssl
 

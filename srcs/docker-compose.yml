@@ -2,23 +2,45 @@ services:
   nginx:
     build: ./requirements/nginx
     ports:
-      - "8443:443"
+      - "443:443"
+    volumes:
+      - website_files:/var/www/html
+    depends_on:
+      - wordpress
+    environment:
+      FPM_HOST: wordpress
+      DOMAIN_NAME: sguzman.42.fr
     restart: on-failure
 
   wordpress:
-    build: ./requirements/wordpress
+    image: wordpress:6.8.1-php8.1-fpm-alpine
+    # build: ./requirements/wordpress
+    volumes:
+      - website_files:/var/www/html
+    depends_on:
+      - mariadb
     environment:
-      WORDPRESS_DB_PASSWORD: password
+      WORDPRESS_DB_HOST: mariadb
+      WORDPRESS_DB_USER: sguzman # ${DB_USER}
+      WORDPRESS_DB_PASSWORD: password # ${DB_PASSWORD}
+      WORDPRESS_DB_NAME: wordpress # ${DB_NAME}
     restart: on-failure
 
   mariadb:
     build: ./requirements/mariadb
+    volumes:
+      - db_data:/var/lib/mysql
     environment:
-      MYSQL_ROOT_PASSWORD: password
-      MYSQL_USER: sguzman
-      MYSQL_PASSWORD: password
+      MARIADB_DATABASE: wordpress # ${DB_NAME}
+      MARIADB_USER: sguzman # ${DB_USER}
+      MARIADB_PASSWORD: password # ${DB_PASSWORD}
+      MARIADB_ROOT_PASSWORD: password # ${DB_ROOT_PASSWORD}
     restart: on-failure
 
 networks:
   default:
     driver: bridge
+
+volumes:
+  db_data:
+  website_files: 

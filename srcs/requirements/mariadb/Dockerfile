@@ -12,7 +12,10 @@ RUN set -ex; \
 	rm -rf /var/lib/mysql; \
 	mkdir -p /var/lib/mysql /run/mysqld; \
 	chown -R mysql:mysql /var/lib/mysql /run/mysqld; \
-	chmod 1777 /run/mysqld
+	chmod 1777 /run/mysqld; \
+	find /etc/mysql/ -name '*.cnf' -print0 \
+		| xargs -0 grep -lZE '^(bind-address|log|user\s)' \
+		| xargs -rt -0 sed -Ei 's/^(bind-address|log|user\s)/#&/';
 
 COPY entrypoint.sh /
 
