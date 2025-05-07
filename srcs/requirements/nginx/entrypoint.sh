@@ -54,13 +54,12 @@ nginx_init() {
 		}\\
 		location ~ \\\.php\$ {\\
 			include fastcgi_params;\\
-			fastcgi_pass $FPM_HOST:9000;\\
+			fastcgi_pass $FPM_HOST;\\
 			fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;\\
 		}\\
 	}" /etc/nginx/nginx.conf
 	sed -i 's/ssl_protocols TLSv1.1 TLSv1.2 TLSv1.3/ssl_protocols TLSv1.2 TLSv1.3/g' /etc/nginx/nginx.conf
 	log "Nginx init process done. Ready for start up."
-	cat /etc/nginx/nginx.conf
 }
 
 if [ "$1" = "nginx" ]; then

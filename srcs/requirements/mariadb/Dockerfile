@@ -21,6 +21,4 @@ COPY entrypoint.sh /
 
 ENTRYPOINT ["/entrypoint.sh"]
 
-EXPOSE 3306
-
 CMD ["mariadbd"]
