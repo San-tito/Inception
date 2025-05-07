@@ -11,8 +11,9 @@ services:
       FPM_HOST: wordpress:9000
       DOMAIN_NAME: sguzman.42.fr
     restart: on-failure
+
   wordpress:
-    image: wordpress:6.8.1-php8.1-fpm-alpine
+    build: ./requirements/wordpress
     expose:
       - 9000
     volumes:
@@ -25,6 +26,7 @@ services:
       WORDPRESS_DB_PASSWORD: ${DB_PASSWORD}
       WORDPRESS_DB_NAME: ${DB_NAME}
     restart: on-failure
+
   mariadb:
     build: ./requirements/mariadb
     expose:

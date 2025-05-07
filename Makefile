@@ -11,7 +11,7 @@
 # **************************************************************************** #
 
 SRCS_PATH			:= ./srcs
-DOCKER_COMPOSE		:= docker-compose
+DOCKER_COMPOSE		:= docker compose
 DOCKER_COMPOSE_FILE	:= $(SRCS_PATH)/docker-compose.yml
 
 .PHONY: usage

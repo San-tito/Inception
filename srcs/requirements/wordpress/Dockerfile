@@ -17,18 +17,16 @@ RUN set -x \
 		php82-intl \
 		php82-mysqli \
 		php82-zip; \
-	sha1='52d5f05c96a9155f78ed84700264307e5dea14b4'; \
+	[ ! -d /var/www/html ]; \
+	mkdir -p /var/www/html; \
+	chown www-data:www-data /var/www/html; \
+	chmod 1777 /var/www/html; \
 	curl -o wordpress.tar.gz -fL "https://wordpress.org/wordpress-6.8.1.tar.gz"; \
-	echo "$sha1 *wordpress.tar.gz" | sha1sum -c -; \
-	mkdir -p /usr/src/; \
-	tar -xzf wordpress.tar.gz -C /usr/src/; \
-	rm wordpress.tar.gz; \
-	chown -R www-data:www-data /usr/src/wordpress;
+	tar --strip-components=1 -xzf wordpress.tar.gz -C /var/www/html; \
+	rm wordpress.tar.gz;
 
 COPY entrypoint.sh /
 
 ENTRYPOINT ["/entrypoint.sh"]
 
-EXPOSE 9000
-
-CMD ["php-fpm82"]
+CMD ["php-fpm82", "-F", "-R"]
