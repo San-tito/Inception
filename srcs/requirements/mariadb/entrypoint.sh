@@ -19,7 +19,7 @@ get_config() {
 
 temp_server_start() {
 	log "Starting temporary server"
-	"$@" --skip-networking --default-time-zone=SYSTEM --socket="${SOCKET}" --wsrep_on=OFF \
+	"$@" --skip-networking --default-time-zone=SYSTEM --socket="$SOCKET" --wsrep_on=OFF \
 		--expire-logs-days=0 \
 		--loose-innodb_buffer_pool_load_at_startup=0 \
 		&
@@ -54,11 +54,9 @@ verify_minimum_env() {
 }
 
 create_db_directories() {
-	local user; user="$(id -u)"
-
 	mkdir -p "$DATADIR"
 
-	if [ "$user" = "0" ]; then
+	if [ "$(id -u)" = "0" ]; then
 		find "$DATADIR" \! -user mysql -exec chown mysql: '{}' +
 	fi
 }
@@ -92,7 +90,7 @@ setup_env() {
 
 process_sql() {
 	shift
-	mariadb --protocol=socket -uroot -hlocalhost --socket="${SOCKET}" "$@"
+	mariadb --protocol=socket -uroot -hlocalhost --socket="$SOCKET" "$@"
 }
 
 setup_db() {
@@ -105,8 +103,8 @@ setup_db() {
 		DROP USER IF EXISTS root@'127.0.0.1', root@'::1';
 		EXECUTE IMMEDIATE CONCAT('DROP USER IF EXISTS root@\'', @@hostname,'\'');
 		
-		SET PASSWORD FOR 'root'@'localhost'= PASSWORD('${MARIADB_ROOT_PASSWORD}');
-		CREATE USER 'root'@'%' IDENTIFIED BY '${MARIADB_ROOT_PASSWORD}' ;
+		SET PASSWORD FOR 'root'@'localhost'= PASSWORD('$MARIADB_ROOT_PASSWORD');
+		CREATE USER 'root'@'%' IDENTIFIED BY '$MARIADB_ROOT_PASSWORD' ;
 		GRANT ALL ON *.* TO 'root'@'%' WITH GRANT OPTION ;
 		GRANT PROXY ON ''@'%' TO 'root'@'%' WITH GRANT OPTION;
 		SET @@SESSION.SQL_LOG_BIN=@orig_sql_log_bin;
@@ -137,7 +135,7 @@ if [ "$1" = 'mariadbd' ]; then
 
 	if [ "$(id -u)" = "0" ]; then
 		log "Switching to dedicated user 'mysql'"
-		exec gosu mysql "${BASH_SOURCE[0]}" "$@"
+		exec gosu mysql "$0" "$@"
 	fi
 
 	if [ -z "$DATABASE_ALREADY_EXISTS" ]; then

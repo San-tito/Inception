@@ -1,32 +1,36 @@
-FROM alpine:3.21
+FROM php:8.1-fpm-alpine
 
 LABEL maintainer="sguzman <sguzman@student.42barcelona.com>"
 
-RUN set -x \
-	addgroup -S www-data; \
-    adduser -u 82 -D -S -G www-data www-data; \
-    apk add --no-cache \
-		curl \
-		tar \
-        php82 \
-		php82-fpm \
-		php82-opcache \
-		php82-bcmath \
-		php82-exif \
-		php82-gd \
-		php82-intl \
-		php82-mysqli \
-		php82-zip; \
-	[ ! -d /var/www/html ]; \
-	mkdir -p /var/www/html; \
-	chown www-data:www-data /var/www/html; \
-	chmod 1777 /var/www/html; \
-	curl -o wordpress.tar.gz -fL "https://wordpress.org/wordpress-6.8.1.tar.gz"; \
-	tar --strip-components=1 -xzf wordpress.tar.gz -C /var/www/html; \
-	rm wordpress.tar.gz;
+RUN set -eux; \
+apk add --no-cache --virtual .build-deps \
+		$PHPIZE_DEPS \
+		freetype-dev \
+		icu-dev \
+		imagemagick-dev libheif-dev \
+		libavif-dev \
+		libjpeg-turbo-dev \
+		libpng-dev \
+		libwebp-dev \
+		libzip-dev \
+	; \
+	docker-php-ext-install -j "$(nproc)" \
+		bcmath \
+		exif \
+		gd \
+		intl \
+		mysqli \
+		zip \
+	; \
+	apk del --no-network .build-deps; \
+	version='6.8.1'; \
+	curl -o wordpress.tar.gz -fL "https://wordpress.org/wordpress-$version.tar.gz"; \
+	tar -xzf wordpress.tar.gz -C /usr/src/; \
+	rm wordpress.tar.gz; \
+	chown -R www-data:www-data /usr/src/wordpress;
 
 COPY entrypoint.sh /
 
 ENTRYPOINT ["/entrypoint.sh"]
 
-CMD ["php-fpm82", "-F", "-R"]
+CMD ["php-fpm"]
