@@ -57,6 +57,10 @@ wordpress_init() {
 		sed -i "s/define( 'DB_USER', 'username_here' );/define( 'DB_USER', '$WORDPRESS_DB_USER' );/" wp-config.php
 		sed -i "s/define( 'DB_PASSWORD', 'password_here' );/define( 'DB_PASSWORD', '$WORDPRESS_DB_PASSWORD' );/" wp-config.php
 		sed -i "s/define( 'DB_HOST', 'localhost' );/define( 'DB_HOST', '$WORDPRESS_DB_HOST' );/" wp-config.php
+		if [ -z "$WORDPRESS_REDIS_HOST" ]; then
+			echo "define( 'WP_REDIS_HOST', '$WORDPRESS_REDIS_HOST' );" >> wp-config.php
+			echo "define( 'WP_REDIS_PORT', '6379' );" >> wp-config.php
+		fi
 
 		if [ "$uid" = '0' ]; then
 			chown -R "$user":"$group" wp-config.php

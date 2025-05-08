@@ -22,9 +22,16 @@ services:
       - mariadb
     environment:
       WORDPRESS_DB_HOST: mariadb:3306
+      WORDPRESS_REDIS_HOST: redis
       WORDPRESS_DB_USER: ${DB_USER}
       WORDPRESS_DB_PASSWORD: ${DB_PASSWORD}
       WORDPRESS_DB_NAME: ${DB_NAME}
+    restart: on-failure
+
+  redis:
+    build: ./requirements/redis
+    expose:
+      - 6379
     restart: on-failure
 
   mariadb:
