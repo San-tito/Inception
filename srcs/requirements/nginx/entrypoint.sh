@@ -18,19 +18,16 @@ setup_config() {
 }
 
 generate_ssl() {
-	log "Generating SSL certificates"
-	mkdir -p /etc/nginx/ssl
-	openssl req -x509 -nodes -days 365 \
-		-newkey rsa:2048 \
-		-keyout /etc/nginx/ssl/${DOMAIN_NAME}.key \
-		-out /etc/nginx/ssl/${DOMAIN_NAME}.crt \
-		-subj "/C=ES/ST=Catalonia/L=Barcelona/O=42/OU=42Barcelona/CN=${DOMAIN_NAME}" >/dev/null 2>&1
-
-	if [ ! -f /etc/nginx/ssl/${DOMAIN_NAME}.key ]; then
-		error "Cannot create SSL key"
+	if [ ! -f /etc/nginx/ssl/$DOMAIN_NAME.crt ] || [ ! -f /etc/nginx/ssl/$DOMAIN_NAME.key ]; then
+		log "Generating SSL certificates"
+		mkdir -p /etc/nginx/ssl
+		openssl req -x509 -nodes -days 365 \
+			-newkey rsa:2048 \
+			-keyout /etc/nginx/ssl/$DOMAIN_NAME.key \
+			-out /etc/nginx/ssl/$DOMAIN_NAME.crt \
+			-subj "/C=ES/ST=Catalonia/L=Barcelona/O=42/OU=42Barcelona/CN=$DOMAIN_NAME" >/dev/null 2>&1
+		log "SSL certificates generated"
 	fi
-
-	log "SSL certificates generated"
 }
 
 verify_minimum_env() {
@@ -40,25 +37,27 @@ verify_minimum_env() {
 }
 
 nginx_init() {
-	log "Configuring server"
-	sed -i "/http {/a \\
-	server {\\
-		listen 443 ssl;\\
-		server_name $DOMAIN_NAME;\\
-		ssl_certificate /etc/nginx/ssl/$DOMAIN_NAME.crt;\\
-		ssl_certificate_key /etc/nginx/ssl/$DOMAIN_NAME.key;\\
-		root /var/www/html;\\
-		index index.html index.php;\\
-		location / {\\
-			try_files \$uri \$uri/ /index.php\$is_args\$args;\\
-		}\\
-		location ~ \\\.php\$ {\\
-			include fastcgi_params;\\
-			fastcgi_pass $FPM_HOST;\\
-			fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;\\
-		}\\
-	}" /etc/nginx/nginx.conf
-	sed -i 's/ssl_protocols TLSv1.1 TLSv1.2 TLSv1.3/ssl_protocols TLSv1.2 TLSv1.3/g' /etc/nginx/nginx.conf
+	if ! grep 'server {' /etc/nginx/nginx.conf > /dev/null 2>&1; then
+		log "Configuring server"
+		sed -i "/http {/a \\
+		server {\\
+			listen 443 ssl;\\
+			server_name $DOMAIN_NAME;\\
+			ssl_certificate /etc/nginx/ssl/$DOMAIN_NAME.crt;\\
+			ssl_certificate_key /etc/nginx/ssl/$DOMAIN_NAME.key;\\
+			root /var/www/html;\\
+			index index.html index.php;\\
+			location / {\\
+				try_files \$uri \$uri/ /index.php\$is_args\$args;\\
+			}\\
+			location ~ \\\.php\$ {\\
+				include fastcgi_params;\\
+				fastcgi_pass $FPM_HOST;\\
+				fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;\\
+			}\\
+		}" /etc/nginx/nginx.conf
+		sed -i 's/ssl_protocols TLSv1.1 TLSv1.2 TLSv1.3/ssl_protocols TLSv1.2 TLSv1.3/g' /etc/nginx/nginx.conf
+	fi
 	log "Nginx init process done. Ready for start up."
 }
 

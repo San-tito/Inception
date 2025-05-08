@@ -29,6 +29,14 @@ verify_minimum_env() {
 	fi
 }
 
+configure_fpm() {
+    sed -i 's/;daemonize = yes/daemonize = no/' /etc/php82/php-fpm.conf
+    sed -i 's/listen = 127\.0\.0\.1:9000/listen = 9000/' /etc/php82/php-fpm.d/www.conf
+    sed -i 's/user = nobody/user = www-data/' /etc/php82/php-fpm.d/www.conf
+    sed -i 's/group = nobody/group = www-data/' /etc/php82/php-fpm.d/www.conf
+    log "PHP-FPM configuration completed."
+}
+
 wordpress_init() {
 	if [ ! -e index.php ]; then
 		if [ "$uid" = '0' ]; then
@@ -57,12 +65,14 @@ wordpress_init() {
 	log "WordPress init process done. Ready for start up."
 }
 
-if [ "$1" = 'php-fpm' ]; then
+if [ "$1" = 'php-fpm82' ]; then
 	log "Entrypoint script for WordPress started."
 
 	setup_env "$@"
 
 	verify_minimum_env
+
+	configure_fpm	
 
 	wordpress_init
 fi

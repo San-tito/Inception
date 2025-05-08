@@ -1,36 +1,35 @@
-FROM php:8.1-fpm-alpine
+FROM alpine:3.21
 
 LABEL maintainer="sguzman <sguzman@student.42barcelona.com>"
 
-RUN set -eux; \
-apk add --no-cache --virtual .build-deps \
-		$PHPIZE_DEPS \
-		freetype-dev \
-		icu-dev \
-		imagemagick-dev libheif-dev \
-		libavif-dev \
-		libjpeg-turbo-dev \
-		libpng-dev \
-		libwebp-dev \
-		libzip-dev \
-	; \
-	docker-php-ext-install -j "$(nproc)" \
-		bcmath \
-		exif \
-		gd \
-		intl \
-		mysqli \
-		zip \
-	; \
-	apk del --no-network .build-deps; \
+RUN set -x; \
+	adduser -u 82 -D -S -G www-data www-data; \
+	[ ! -d /var/www/html ]; \
+	mkdir -p /var/www/html; \
+	chown www-data:www-data /var/www/html; \
+	chmod 1777 /var/www/html; \
+	apk add --no-cache  \
+		curl \
+		tar \
+		php82 \
+		php82-fpm \
+		php82-bcmath \
+		php82-exif \
+		php82-gd \
+		php82-intl \
+		php82-mysqli \
+		php82-zip; \
 	version='6.8.1'; \
+	mkdir -p /usr/src; \
 	curl -o wordpress.tar.gz -fL "https://wordpress.org/wordpress-$version.tar.gz"; \
 	tar -xzf wordpress.tar.gz -C /usr/src/; \
 	rm wordpress.tar.gz; \
 	chown -R www-data:www-data /usr/src/wordpress;
 
+WORKDIR /var/www/html
+
 COPY entrypoint.sh /
 
 ENTRYPOINT ["/entrypoint.sh"]
 
-CMD ["php-fpm"]
+CMD ["php-fpm82"]
