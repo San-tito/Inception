@@ -13,6 +13,8 @@ RUN set -x; \
 		tar \
 		php82 \
 		php82-fpm \
+		php82-phar \
+		php82-redis \
 		php82-bcmath \
 		php82-exif \
 		php82-gd \

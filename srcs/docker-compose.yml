@@ -9,7 +9,7 @@ services:
       - wordpress
     environment:
       FPM_HOST: wordpress:9000
-      DOMAIN_NAME: sguzman.42.fr
+      DOMAIN_NAME: ${DOMAIN_NAME}
     restart: on-failure
 
   wordpress:
@@ -21,8 +21,9 @@ services:
     depends_on:
       - mariadb
     environment:
-      WORDPRESS_DB_HOST: mariadb:3306
+      WORDPRESS_URL: ${DOMAIN_NAME}
       WORDPRESS_REDIS_HOST: redis
+      WORDPRESS_DB_HOST: mariadb:3306
       WORDPRESS_DB_USER: ${DB_USER}
       WORDPRESS_DB_PASSWORD: ${DB_PASSWORD}
       WORDPRESS_DB_NAME: ${DB_NAME}

@@ -30,11 +30,16 @@ verify_minimum_env() {
 }
 
 configure_fpm() {
-    sed -i 's/;daemonize = yes/daemonize = no/' /etc/php82/php-fpm.conf
-    sed -i 's/listen = 127\.0\.0\.1:9000/listen = 9000/' /etc/php82/php-fpm.d/www.conf
-    sed -i 's/user = nobody/user = www-data/' /etc/php82/php-fpm.d/www.conf
-    sed -i 's/group = nobody/group = www-data/' /etc/php82/php-fpm.d/www.conf
-    log "PHP-FPM configuration completed."
+	if [ ! -e /etc/php82/php-fpm.d/docker.conf ]; then
+		log "Configuring PHP-FPM"
+		echo "[global]" > /etc/php82/php-fpm.d/docker.conf
+		echo "daemonize = no" >> /etc/php82/php-fpm.d/docker.conf
+		echo "[www]" >> /etc/php82/php-fpm.d/docker.conf
+		echo "user = $user" >> /etc/php82/php-fpm.d/docker.conf
+		echo "group = $group" >> /etc/php82/php-fpm.d/docker.conf
+		sed -i 's/listen = 127\.0\.0\.1:9000/listen = 9000/' /etc/php82/php-fpm.d/www.conf
+		log "PHP-FPM configuration completed."
+	fi
 }
 
 wordpress_init() {
@@ -52,14 +57,24 @@ wordpress_init() {
 	if [ ! -s wp-config.php ]; then
 		log "No 'wp-config.php' found in $PWD, creating new one."
 
-		cp -R /usr/src/wordpress/wp-config-sample.php wp-config.php
-		sed -i "s/define( 'DB_NAME', 'database_name_here' );/define( 'DB_NAME', '$WORDPRESS_DB_NAME' );/" wp-config.php
-		sed -i "s/define( 'DB_USER', 'username_here' );/define( 'DB_USER', '$WORDPRESS_DB_USER' );/" wp-config.php
-		sed -i "s/define( 'DB_PASSWORD', 'password_here' );/define( 'DB_PASSWORD', '$WORDPRESS_DB_PASSWORD' );/" wp-config.php
-		sed -i "s/define( 'DB_HOST', 'localhost' );/define( 'DB_HOST', '$WORDPRESS_DB_HOST' );/" wp-config.php
-		if [ -z "$WORDPRESS_REDIS_HOST" ]; then
-			echo "define( 'WP_REDIS_HOST', '$WORDPRESS_REDIS_HOST' );" >> wp-config.php
-			echo "define( 'WP_REDIS_PORT', '6379' );" >> wp-config.php
+		curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar > /dev/null
+		php82 wp-cli.phar config create \
+			--dbname="$WORDPRESS_DB_NAME" \
+			--dbuser="$WORDPRESS_DB_USER" \
+			--dbpass="$WORDPRESS_DB_PASSWORD" \
+			--dbhost="$WORDPRESS_DB_HOST" \
+			> /dev/null
+		php82 wp-cli.phar core install \
+			--title="$WORDPRESS_DB_NAME" \
+			--url="$WORDPRESS_URL" \
+			--admin_user="$WORDPRESS_DB_USER" \
+			--admin_password="$WORDPRESS_DB_PASSWORD" \
+			--admin_email="$WORDPRESS_DB_USER@example.com" \
+			> /dev/null
+	
+		if [ "$WORDPRESS_REDIS_HOST" ]; then
+			# php82 wp-cli.phar config set WP_REDIS_HOST "$WORDPRESS_REDIS_HOST" > /dev/null
+			php82 wp-cli.phar plugin install redis-cache --activate > /dev/null
 		fi
 
 		if [ "$uid" = '0' ]; then
