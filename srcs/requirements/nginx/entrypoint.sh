@@ -50,14 +50,12 @@ nginx_init() {
 			location / {\\
 				try_files \$uri \$uri/ /index.php\$is_args\$args;\\
 			}\\
+			location /adminer {\\
+				try_files \$uri \$uri/ /adminer.php\$is_args\$args;\\
+			}\\
 			location ~ \\\.php\$ {\\
 				include fastcgi_params;\\
 				fastcgi_pass $FPM_HOST;\\
-				fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;\\
-			}\\
-			location ~ ^/adminer {\\
-				include fastcgi_params;\\
-				fastcgi_index adminer.php;\\
 				fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;\\
 			}\\
 		}" /etc/nginx/nginx.conf

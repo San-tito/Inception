@@ -9,20 +9,7 @@ RUN set -x; \
 	chown www-data:www-data /var/www/html; \
 	chmod 1777 /var/www/html; \
 	apk add --no-cache  \
-		curl \
-		tar \
-		php82 \
-		php82-gd \
-		php82-zip \
-		php82-fpm \
-		php82-phar \
-		php82-exif \
-		php82-intl \
-		php82-ctype \
-		php82-redis \
-		php82-bcmath \
-		php82-mysqli \
-		php82-tokenizer; \
+		curl; \
 	version='5.2.1'; \
 	mkdir -p /usr/src; \
 	curl -o adminer.php -fL "https://github.com/vrana/adminer/releases/download/v$version/adminer-$version.php"; \
@@ -35,4 +22,4 @@ COPY entrypoint.sh /
 
 ENTRYPOINT ["/entrypoint.sh"]
 
-CMD ["php-fpm82"]
+CMD ["echo"]
