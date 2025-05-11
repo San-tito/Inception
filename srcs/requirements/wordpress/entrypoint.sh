@@ -57,24 +57,29 @@ wordpress_init() {
 	if [ ! -s wp-config.php ]; then
 		log "No 'wp-config.php' found in $PWD, creating new one."
 
-		curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar > /dev/null
-		php82 wp-cli.phar config create \
+		curl -sO https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
+
+		wp () { 
+			log $(php82 wp-cli.phar "$@" 2>&1) 
+		}
+
+		wp config create \
 			--dbname="$WORDPRESS_DB_NAME" \
 			--dbuser="$WORDPRESS_DB_USER" \
 			--dbpass="$WORDPRESS_DB_PASSWORD" \
-			--dbhost="$WORDPRESS_DB_HOST" \
-			> /dev/null
-		php82 wp-cli.phar core install \
+			--dbhost="$WORDPRESS_DB_HOST"
+
+		wp core install \
 			--title="$WORDPRESS_DB_NAME" \
 			--url="$WORDPRESS_URL" \
 			--admin_user="$WORDPRESS_DB_USER" \
 			--admin_password="$WORDPRESS_DB_PASSWORD" \
-			--admin_email="$WORDPRESS_DB_USER@example.com" \
-			> /dev/null
+			--admin_email="$WORDPRESS_DB_USER@example.com"
 	
 		if [ "$WORDPRESS_REDIS_HOST" ]; then
-			# php82 wp-cli.phar config set WP_REDIS_HOST "$WORDPRESS_REDIS_HOST" > /dev/null
-			php82 wp-cli.phar plugin install redis-cache --activate > /dev/null
+			wp config set WP_REDIS_HOST "$WORDPRESS_REDIS_HOST"
+			wp plugin install redis-cache --activate
+			wp redis enable
 		fi
 
 		if [ "$uid" = '0' ]; then

@@ -12,15 +12,17 @@ RUN set -x; \
 		curl \
 		tar \
 		php82 \
+		php82-gd \
+		php82-zip \
 		php82-fpm \
 		php82-phar \
+		php82-exif \
+		php82-intl \
+		php82-ctype \
 		php82-redis \
 		php82-bcmath \
-		php82-exif \
-		php82-gd \
-		php82-intl \
 		php82-mysqli \
-		php82-zip; \
+		php82-tokenizer; \
 	version='6.8.1'; \
 	mkdir -p /usr/src; \
 	curl -o wordpress.tar.gz -fL "https://wordpress.org/wordpress-$version.tar.gz"; \

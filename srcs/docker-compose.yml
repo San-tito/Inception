@@ -20,6 +20,7 @@ services:
       - website_files:/var/www/html
     depends_on:
       - mariadb
+      - redis
     environment:
       WORDPRESS_URL: ${DOMAIN_NAME}
       WORDPRESS_REDIS_HOST: redis
@@ -27,12 +28,6 @@ services:
       WORDPRESS_DB_USER: ${DB_USER}
       WORDPRESS_DB_PASSWORD: ${DB_PASSWORD}
       WORDPRESS_DB_NAME: ${DB_NAME}
-    restart: on-failure
-
-  redis:
-    build: ./requirements/redis
-    expose:
-      - 6379
     restart: on-failure
 
   mariadb:
@@ -46,6 +41,24 @@ services:
       MARIADB_USER: ${DB_USER}
       MARIADB_PASSWORD: ${DB_PASSWORD}
       MARIADB_ROOT_PASSWORD: ${DB_PASSWORD}
+    restart: on-failure
+
+  redis:
+    build: ./requirements/redis
+    expose:
+      - 6379
+    restart: on-failure
+
+  ftp:
+    image: fauria/vsftpd
+    # build: ./requirements/ftp
+    ports:
+      - 21:21
+    volumes:
+      - website_files:/home/vsftpd
+    environment:
+      FTP_USER: ${DB_USER}
+      FTP_PASS: ${DB_PASSWORD}
     restart: on-failure
 
 networks:
