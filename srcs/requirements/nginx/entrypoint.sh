@@ -56,11 +56,6 @@ nginx_init() {
 			location /static {\\
 				try_files \$uri \$uri/ /static.html\$is_args\$args;\\
 			}\\
-			location /cadvisorx/ {\\
-				proxy_pass http://cadvisor:8080/docker;\\
-				proxy_set_header Host \$host;\\
-				proxy_set_header X-Real-IP \$remote_addr;\\
-			}\\
 			location ~ \\\.php\$ {\\
 				include fastcgi_params;\\
 				fastcgi_pass $FPM_HOST;\\

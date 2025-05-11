@@ -53,6 +53,7 @@ services:
     build: ./requirements/ftp
     ports:
       - 21:21
+      - 5000-5100:5000-5100
     volumes:
       - website_files:${HOME}
     environment:
@@ -77,8 +78,6 @@ services:
     build: ./requirements/cadvisor
     ports:
       - 8080:8080
-    expose:
-      - 8080
     volumes:
       # - /:/rootfs:ro
       - /var/run:/var/run:ro 

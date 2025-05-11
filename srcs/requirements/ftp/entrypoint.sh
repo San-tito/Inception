@@ -29,6 +29,9 @@ ftp_init()
 		echo "write_enable=YES" >> /etc/vsftpd.conf
 		echo "allow_writeable_chroot=YES" >> /etc/vsftpd.conf
 		echo "seccomp_sandbox=NO" >> /etc/vsftpd.conf
+		echo "pasv_enable=YES" >> /etc/vsftpd.conf
+		echo "pasv_min_port=5000" >> /etc/vsftpd.conf
+		echo "pasv_max_port=5100" >> /etc/vsftpd.conf
 	fi
 	log "Ftp Server init process done. Ready for start up."
 }
