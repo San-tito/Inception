@@ -73,6 +73,17 @@ services:
       TITLE: ${USER}
     restart: on-failure
 
+  cadvisor:
+    build: ./requirements/cadvisor
+    ports:
+      - 8080:8080
+    volumes:
+      # - /:/rootfs:ro
+      - /var/run:/var/run:ro 
+      # - /sys:/sys:ro 
+      - /var/lib/docker/:/var/lib/docker:ro
+    restart: on-failure
+
 networks:
   default:
     driver: bridge
@@ -82,14 +93,11 @@ volumes:
     driver: local
     driver_opts:
       type: none
-      device: ${HOME}/data/db_data
+      device: /home/sguzman/data/db_data
       o: bind
   website_files:
     driver: local
     driver_opts:
       type: none
-      device: ${HOME}/data/website_files
+      device: /home/sguzman/data/website_files
       o: bind
-
-x-environment:
-  HOME: /home/${USER}
