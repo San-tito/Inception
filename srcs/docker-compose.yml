@@ -54,10 +54,19 @@ services:
     ports:
       - 21:21
     volumes:
-      - website_files:/home/${USER}
+      - website_files:${HOME}
     environment:
-      FTP_USER: ${USER}
       FTP_PASS: ${PASSWORD} 
+    restart: on-failure
+
+  adminer:
+    build: ./requirements/adminer
+    expose: 
+      - 9000
+    volumes:
+      - website_files:/var/www/html
+    depends_on:
+      - wordpress
     restart: on-failure
 
 networks:
@@ -69,11 +78,14 @@ volumes:
     driver: local
     driver_opts:
       type: none
-      device: /home/santito/data/db_data
+      device: ${HOME}/data/db_data
       o: bind
   website_files:
     driver: local
     driver_opts:
       type: none
-      device: /home/santito/data/website_files
+      device: ${HOME}/data/website_files
       o: bind
+
+x-environment:
+  HOME: /home/${USER}

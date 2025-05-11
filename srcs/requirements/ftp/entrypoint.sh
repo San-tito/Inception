@@ -12,20 +12,14 @@ error() {
 }
 
 verify_minimum_env() {
-	if [ -z "$FTP_USER" ] || [ -z "$FTP_PASS" ]; then
-		error $'Ftp Server is unitialized and options are not specified\n\tYou need to specify FTP_USER and FTP_PASS' 
+	if [ -z "$FTP_PASS" ]; then
+		error $'Ftp Server is unitialized and options are not specified\n\tYou need to specify FTP_PASS' 
 	fi
 }
 
 ftp_init()
 {
-	log "Creating FTP user $FTP_USER"
-	addgroup -g 1000 -S $FTP_USER
-	adduser -S -D -H -u 1000 -s /sbin/nologin -G $FTP_USER -g $FTP_USER $FTP_USER
-
-	mkdir -p /home/$FTP_USER
-	chown -R $FTP_USER:$FTP_USER /home/$FTP_USER
-	echo "$FTP_USER:$FTP_PASS" | /usr/sbin/chpasswd
+	echo "ftp:$FTP_PASS" | /usr/sbin/chpasswd
 	if [ ! -f /etc/vsftpd.conf ]; then
 		log "Configuring vsftpd"
 		echo "listen=YES" >> /etc/vsftpd.conf

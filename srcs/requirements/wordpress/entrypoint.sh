@@ -47,7 +47,7 @@ wordpress_init() {
 		if [ "$uid" = '0' ]; then
 			chown "$user:$group" .
 		fi
-		echo "WordPress not found in $PWD, copying files from /usr/src/wordpress"
+		log "WordPress not found in $PWD, copying files from /usr/src/wordpress"
 		sourceTarArgs="--create --file - --directory /usr/src/wordpress --owner $user --group $group"
 		targetTarArgs="--extract --file -"
 		tar $sourceTarArgs . | tar $targetTarArgs
