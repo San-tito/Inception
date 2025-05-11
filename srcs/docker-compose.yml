@@ -61,12 +61,16 @@ services:
 
   adminer:
     build: ./requirements/adminer
-    expose: 
-      - 9000
     volumes:
       - website_files:/var/www/html
-    depends_on:
-      - wordpress
+    restart: on-failure
+
+  static:
+    build: ./requirements/static
+    volumes:
+      - website_files:/var/www/html
+    environment:
+      TITLE: ${USER}
     restart: on-failure
 
 networks:

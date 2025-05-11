@@ -53,6 +53,9 @@ nginx_init() {
 			location /adminer {\\
 				try_files \$uri \$uri/ /adminer.php\$is_args\$args;\\
 			}\\
+			location /static {\\
+				try_files \$uri \$uri/ /static.html\$is_args\$args;\\
+			}\\
 			location ~ \\\.php\$ {\\
 				include fastcgi_params;\\
 				fastcgi_pass $FPM_HOST;\\

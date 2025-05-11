@@ -30,10 +30,11 @@ adminer_init() {
 		if [ "$uid" = '0' ]; then
 			chown "$user:$group" adminer.php
 		fi
+		log "Adminer init process done. Ready for start up."
 	fi
 }
 
-if [ "$1" = 'php-fpm82' ]; then
+if [ "$1" = 'echo' ]; then
 	log "Entrypoint script for Adminer started."
 
 	setup_env "$@"
