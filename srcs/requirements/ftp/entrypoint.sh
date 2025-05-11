@@ -19,15 +19,13 @@ verify_minimum_env() {
 
 ftp_init()
 {
-	if [ ! -d "/home/$FTP_USER" ]; then
-		log "Creating FTP user $FTP_USER"
-		addgroup -g 1000 -S $FTP_USER
-		adduser -S -D -H -u 1000 -s /sbin/nologin -G $FTP_USER -g $FTP_USER $FTP_USER
+	log "Creating FTP user $FTP_USER"
+	addgroup -g 1000 -S $FTP_USER
+	adduser -S -D -H -u 1000 -s /sbin/nologin -G $FTP_USER -g $FTP_USER $FTP_USER
 
-		mkdir -p /home/$FTP_USER
-		chown -R $FTP_USER:$FTP_USER /home/$FTP_USER
-		echo "$FTP_USER:$FTP_PASS" | /usr/sbin/chpasswd
-	fi
+	mkdir -p /home/$FTP_USER
+	chown -R $FTP_USER:$FTP_USER /home/$FTP_USER
+	echo "$FTP_USER:$FTP_PASS" | /usr/sbin/chpasswd
 	if [ ! -f /etc/vsftpd.conf ]; then
 		log "Configuring vsftpd"
 		echo "listen=YES" >> /etc/vsftpd.conf
