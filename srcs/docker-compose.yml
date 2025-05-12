@@ -55,7 +55,7 @@ services:
       - 21:21
       - 5000-5100:5000-5100
     volumes:
-      - website_files:${HOME}
+      - website_files:/home/ftp
     environment:
       FTP_PASS: ${PASSWORD} 
     restart: on-failure
@@ -79,9 +79,9 @@ services:
     ports:
       - 8080:8080
     volumes:
-      # - /:/rootfs:ro
+      - /:/rootfs:ro
       - /var/run:/var/run:ro 
-      # - /sys:/sys:ro 
+      - /sys:/sys:ro 
       - /var/lib/docker/:/var/lib/docker:ro
     restart: on-failure
 

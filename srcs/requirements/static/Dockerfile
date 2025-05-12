@@ -8,4 +8,4 @@ COPY entrypoint.sh /
 
 ENTRYPOINT ["/entrypoint.sh"]
 
-CMD ["echo"]
+CMD ["/bin/sh", "-c", "true"]
