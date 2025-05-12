@@ -22,4 +22,4 @@ COPY entrypoint.sh /
 
 ENTRYPOINT ["/entrypoint.sh"]
 
-CMD ["/bin/sh", "-c", "true"]
+CMD ["true"]

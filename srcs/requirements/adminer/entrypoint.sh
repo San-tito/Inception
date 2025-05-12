@@ -34,7 +34,7 @@ adminer_init() {
 	fi
 }
 
-if [ "$1" = 'echo' ]; then
+if [ "$1" = 'true' ]; then
 	log "Entrypoint script for Adminer started."
 
 	setup_env "$@"

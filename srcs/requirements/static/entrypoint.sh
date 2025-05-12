@@ -24,7 +24,7 @@ static_init() {
 	fi
 }
 
-if [ "$1" = 'echo' ]; then
+if [ "$1" = 'true' ]; then
 	log "Entrypoint script for static started."
 
 	verify_minimum_env
