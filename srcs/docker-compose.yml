@@ -25,9 +25,9 @@ services:
       WORDPRESS_URL: ${DOMAIN_NAME}
       WORDPRESS_REDIS_HOST: redis
       WORDPRESS_DB_HOST: mariadb:3306
-      WORDPRESS_DB_USER: ${USER}
-      WORDPRESS_DB_PASSWORD: ${PASSWORD}
-      WORDPRESS_DB_NAME: ${DATABASE}
+      WORDPRESS_DB_USER: ${DB_USER}
+      WORDPRESS_DB_PASSWORD: ${DB_PASSWORD}
+      WORDPRESS_DB_NAME: ${DB_NAME}
     restart: on-failure
 
   mariadb:
@@ -37,10 +37,10 @@ services:
     volumes:
       - db_data:/var/lib/mysql
     environment:
-      MARIADB_DATABASE: ${DATABASE}
-      MARIADB_USER: ${USER}
-      MARIADB_PASSWORD: ${PASSWORD}
-      MARIADB_ROOT_PASSWORD: ${PASSWORD}
+      MARIADB_DATABASE: ${DB_NAME}
+      MARIADB_USER: ${DB_USER}
+      MARIADB_PASSWORD: ${DB_PASSWORD}
+      MARIADB_ROOT_PASSWORD: ${DB_PASSWORD}
     restart: on-failure
 
   redis:
@@ -57,7 +57,7 @@ services:
     volumes:
       - website_files:/home/ftp
     environment:
-      FTP_PASS: ${PASSWORD} 
+      FTP_PASS: ${DB_PASSWORD} 
     restart: on-failure
 
   adminer:
