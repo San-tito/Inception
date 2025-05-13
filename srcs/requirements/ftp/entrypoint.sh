@@ -19,8 +19,8 @@ verify_minimum_env() {
 
 ftp_init()
 {
-	addgroup -S "$FTP_USER"
-	adduser -D -G "$FTP_USER" -h "/home/$FTP_USER" -s "/bin/false" "$FTP_USER"
+	addgroup -S "$FTP_USER" > /dev/null 2>&1
+	adduser -D -G "$FTP_USER" -h "/home/$FTP_USER" -s "/bin/false" "$FTP_USER" > /dev/null 2>&1
 	mkdir -p /home/$FTP_USER
 	chown -R "$FTP_USER":"$FTP_USER" /home/$FTP_USER
 	echo "$FTP_USER:$FTP_PASS" | chpasswd

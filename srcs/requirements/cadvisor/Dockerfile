@@ -9,4 +9,4 @@ RUN set -x; \
 	curl -o cadvisor -fL "https://github.com/google/cadvisor/releases/download/v$version/cadvisor-v$version-linux-amd64"; \
 	chmod +x cadvisor;
 
-CMD ["./cadvisor"]
+CMD ["./cadvisor", "--v=1", "--stderrthreshold=0"]
