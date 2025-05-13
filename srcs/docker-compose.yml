@@ -72,7 +72,7 @@ services:
     volumes:
       - website_files:/var/www/html
     environment:
-      TITLE: ${USER}
+      TITLE: ${DB_USER}
     restart: on-failure
 
   cadvisor:
