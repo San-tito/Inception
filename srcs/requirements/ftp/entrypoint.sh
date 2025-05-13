@@ -19,11 +19,13 @@ verify_minimum_env() {
 
 ftp_init()
 {
-	addgroup -S "$FTP_USER" > /dev/null 2>&1
-	adduser -D -G "$FTP_USER" -h "/home/$FTP_USER" -s "/bin/false" "$FTP_USER" > /dev/null 2>&1
-	mkdir -p /home/$FTP_USER
-	chown -R "$FTP_USER":"$FTP_USER" /home/$FTP_USER
-	echo "$FTP_USER:$FTP_PASS" | chpasswd
+	if [ ! -d /home/$FTP_USER ]; then
+		addgroup -S "$FTP_USER" > /dev/null 2>&1
+		adduser -D -G "$FTP_USER" -h "/home/$FTP_USER" -s "/bin/false" "$FTP_USER" > /dev/null 2>&1
+		mkdir -p /home/$FTP_USER
+		chown -R "$FTP_USER":"$FTP_USER" /home/$FTP_USER
+		echo "$FTP_USER:$FTP_PASS" | chpasswd
+	fi
 	if [ ! -f /etc/vsftpd.conf ]; then
 		log "Configuring vsftpd"
 		cat > /etc/vsftpd.conf <<-EOF
