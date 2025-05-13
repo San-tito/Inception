@@ -53,11 +53,12 @@ services:
     build: ./requirements/ftp
     ports:
       - 21:21
-      - 5000-5100:5000-5100
+      - 21100-21110:21100-21110
     volumes:
-      - website_files:/home/ftp
+      - website_files:/home/${DB_USER}
     environment:
-      FTP_PASS: ${DB_PASSWORD} 
+      FTP_USER: ${DB_USER}
+      FTP_PASS: ${DB_PASSWORD}
     restart: on-failure
 
   adminer:
