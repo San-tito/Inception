@@ -1,3 +1,4 @@
+name: Inception
 services:
   nginx:
     build: ./requirements/nginx
@@ -53,7 +54,7 @@ services:
     build: ./requirements/ftp
     ports:
       - 21:21
-      - 21100-21110:21100-21110
+      - 5000-5010:5000-5010
     volumes:
       - website_files:/home/${DB_USER}
     environment:
