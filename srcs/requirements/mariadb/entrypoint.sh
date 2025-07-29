@@ -1,6 +1,6 @@
-#!/bin/bash
+#!/bin/sh
 
-set -eo pipefail
+set -e
 
 log() {
 	printf '[Entrypoint]: %s\n' "$*"
@@ -11,42 +11,6 @@ error() {
 	exit 1
 }
 
-get_config() {
-	local conf="$1"; shift
-	"$@" --verbose --help 2>/dev/null \
-		| awk -v conf="$conf" '$1 == conf && /^[^ \t]/ { sub(/^[^ \t]+[ \t]+/, ""); print; exit }'
-}
-
-temp_server_start() {
-	log "Starting temporary server"
-	"$@" --skip-networking --default-time-zone=SYSTEM --socket="$SOCKET" --wsrep_on=OFF \
-		--expire-logs-days=0 \
-		--loose-innodb_buffer_pool_load_at_startup=0 \
-		&
-	declare -g MARIADB_PID
-	MARIADB_PID=$!
-	log "Waiting for server startup"
-	local i
-	for i in {30..0}; do
-		if process_sql --database=mysql \
-			<<<'SELECT 1' &> /dev/null; then
-			break
-		fi
-		sleep 1
-	done
-	if [ "$i" = 0 ]; then
-		error "Unable to start server."
-	fi
-	log "Temporary server started."
-}
-
-temp_server_stop() {
-	log "Stopping temporary server"
-	kill "$MARIADB_PID"
-	wait "$MARIADB_PID"
-	log "Temporary server stopped"
-}
-
 verify_minimum_env() {
 	if [ -z "$MARIADB_DATABASE" ] || [ -z "$MARIADB_USER"] || [ -z "$MARIADB_PASSWORD"] || [ -z "$MARIADB_ROOT_PASSWORD"]; then
 		error $'Database is uninitialized and options are not specified\n\tYou need to specify MARIADB_DATABASE, MARIADB_USER, MARIADB_PASSWORD and MARIADB_ROOT_PASSWORD'
@@ -54,48 +18,26 @@ verify_minimum_env() {
 }
 
 create_db_directories() {
-	mkdir -p "$DATADIR"
-
-	if [ "$(id -u)" = "0" ]; then
-		find "$DATADIR" \! -user mysql -exec chown mysql: '{}' +
-	fi
+	mkdir -p /run/mysqld
+	chown -R mysql:mysql /run/mysqld
 }
 
 init_database_dir() {
 	log "Initializing database files"
-	installArgs=( --datadir="$DATADIR" --rpm --auth-root-authentication-method=normal )
-
-	mariadb-install-db "${installArgs[@]}" \
-		--skip-test-db \
-		--old-mode='UTF8_IS_UTF8MB3' \
-		--default-time-zone=SYSTEM --enforce-storage-engine= \
-		--skip-log-bin \
-		--expire-logs-days=0 \
-		--loose-innodb_buffer_pool_load_at_startup=0 \
-		--loose-innodb_buffer_pool_dump_at_shutdown=0
+	mariadb-install-db --user=mysql --ldata=/var/lib/mysql
 	log "Database files initialized"
 }
 
 setup_env() {
-	declare -g DATADIR SOCKET PORT
-	DATADIR="$(get_config 'datadir' "$@")"
-	SOCKET="$(get_config 'socket' "$@")"
-	PORT="$(get_config 'port' "$@")"
-
-	declare -g DATABASE_ALREADY_EXISTS
-	if [ -d "$DATADIR/mysql" ]; then
+	DATABASE_ALREADY_EXISTS=
+	if [ -d "/var/lib/mysql/mysql" ]; then
 		DATABASE_ALREADY_EXISTS='true'
 	fi
 }
 
-process_sql() {
-	shift
-	mariadb --protocol=socket -uroot -hlocalhost --socket="$SOCKET" "$@"
-}
-
 setup_db() {
 	log "Securing system users"
-	process_sql --database=mysql --binary-mode <<-EOSQL
+	mariadbd --user=mysql --bootstrap --verbose=0 --skip-name-resolve --skip-networking=0 <<-EOSQL
 		SET @orig_sql_log_bin= @@SESSION.SQL_LOG_BIN;
 		SET @@SESSION.SQL_LOG_BIN=0;
 		SET @@SESSION.SQL_MODE=REPLACE(@@SESSION.SQL_MODE, 'NO_BACKSLASH_ESCAPES', '');
@@ -118,11 +60,7 @@ mariadb_init()
 {
 	init_database_dir "$@"
 
-	temp_server_start "$@"
-
 	setup_db
-
-	temp_server_stop
 
 	log "MariaDB init process done. Ready for start up."
 }
@@ -132,11 +70,6 @@ if [ "$1" = 'mariadbd' ]; then
 
 	setup_env "$@"
 	create_db_directories
-
-	if [ "$(id -u)" = "0" ]; then
-		log "Switching to dedicated user 'mysql'"
-		exec gosu mysql "$0" "$@"
-	fi
 
 	if [ -z "$DATABASE_ALREADY_EXISTS" ]; then
 		verify_minimum_env

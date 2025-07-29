@@ -93,14 +93,14 @@ networks:
 
 volumes:
   db_data:
-    driver: local
-    driver_opts:
-      type: none
-      device: /home/sguzman/data/db_data
-      o: bind
+  #  driver: local
+  #  driver_opts:
+  #    type: none
+  #    device: /home/sguzman/data/db_data
+  #    o: bind
   website_files:
-    driver: local
-    driver_opts:
-      type: none
-      device: /home/sguzman/data/website_files
-      o: bind
+  #  driver: local
+  #  driver_opts:
+  #    type: none
+  #    device: /home/sguzman/data/website_files
+  #    o: bind
