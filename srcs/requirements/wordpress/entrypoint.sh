@@ -43,24 +43,24 @@ configure_fpm() {
 }
 
 wordpress_init() {
-	if [ ! -e index.php ]; then
+	if [ ! -e /var/www/html/index.php ]; then
 		if [ "$uid" = '0' ]; then
-			chown "$user:$group" .
+			chown "$user:$group" /var/www/html
 		fi
-		log "WordPress not found in $PWD, copying files from /usr/src/wordpress"
+		log "WordPress not found in /var/www/html, copying files from /usr/src/wordpress"
 		sourceTarArgs="--create --file - --directory /usr/src/wordpress --owner $user --group $group"
-		targetTarArgs="--extract --file -"
+		targetTarArgs="--extract --file - --directory /var/www/html"
 		tar $sourceTarArgs . | tar $targetTarArgs
-		log "Completed copying files to $PWD"
+		log "Completed copying files to /var/www/html"
 	fi
 
-	if [ ! -s wp-config.php ]; then
-		log "No 'wp-config.php' found in $PWD, creating new one."
+	if [ ! -s /var/www/html/wp-config.php ]; then
+		log "No 'wp-config.php' found in /var/www/html, creating new one."
 
 		curl -sO https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
 
 		wp () { 
-			log $(php82 wp-cli.phar "$@" 2>&1) 
+			log $(php82 wp-cli.phar --path=/var/www/html "$@" 2>&1) 
 		}
 
 		wp config create \
@@ -83,7 +83,7 @@ wordpress_init() {
 		fi
 
 		if [ "$uid" = '0' ]; then
-			chown -R "$user":"$group" wp-config.php
+			chown -R "$user":"$group" /var/www/html/wp-config.php
 		fi
 	fi
 	log "WordPress init process done. Ready for start up."

@@ -30,8 +30,6 @@ RUN set -x; \
 	rm wordpress.tar.gz; \
 	chown -R www-data:www-data /usr/src/wordpress;
 
-WORKDIR /var/www/html
-
 COPY entrypoint.sh /
 
 ENTRYPOINT ["/entrypoint.sh"]
